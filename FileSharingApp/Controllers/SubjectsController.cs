@@ -47,7 +47,7 @@ namespace FileSharingApp.Controllers
         // GET: Subjects/Create
         public IActionResult Create()
         {
-            ViewData["SpecialityId"] = new SelectList(_context.Specialities, "Id", "Id");
+            ViewData["SpecialityId"] = new SelectList(_context.Specialities, "Id", "Name");
             return View();
         }
 
@@ -64,7 +64,7 @@ namespace FileSharingApp.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["SpecialityId"] = new SelectList(_context.Specialities, "Id", "Id", subject.SpecialityId);
+            ViewData["SpecialityId"] = new SelectList(_context.Specialities, "Id", "Name", subject.SpecialityId);
             return View(subject);
         }
 
@@ -81,7 +81,7 @@ namespace FileSharingApp.Controllers
             {
                 return NotFound();
             }
-            ViewData["SpecialityId"] = new SelectList(_context.Specialities, "Id", "Id", subject.SpecialityId);
+            ViewData["SpecialityId"] = new SelectList(_context.Specialities, "Id", "Name", subject.SpecialityId);
             return View(subject);
         }
 
@@ -117,7 +117,7 @@ namespace FileSharingApp.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["SpecialityId"] = new SelectList(_context.Specialities, "Id", "Id", subject.SpecialityId);
+            ViewData["SpecialityId"] = new SelectList(_context.Specialities, "Id", "Name", subject.SpecialityId);
             return View(subject);
         }
 
