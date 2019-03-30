@@ -1,9 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace FileSharingApp.Migrations
+namespace FileSharingApp.Migrations.ApplicationDb
 {
-    public partial class InitialCreate : Migration
+    public partial class AddModels : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -51,6 +51,7 @@ namespace FileSharingApp.Migrations
                     Path = table.Column<string>(nullable: true),
                     Public = table.Column<bool>(nullable: false),
                     UserId = table.Column<int>(nullable: false),
+                    UserId1 = table.Column<string>(nullable: true),
                     SubjectId = table.Column<int>(nullable: false)
                 },
                 constraints: table =>
@@ -62,12 +63,23 @@ namespace FileSharingApp.Migrations
                         principalTable: "Subjects",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Files_AspNetUsers_UserId1",
+                        column: x => x.UserId1,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Files_SubjectId",
                 table: "Files",
                 column: "SubjectId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Files_UserId1",
+                table: "Files",
+                column: "UserId1");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Subjects_SpecialityId",
