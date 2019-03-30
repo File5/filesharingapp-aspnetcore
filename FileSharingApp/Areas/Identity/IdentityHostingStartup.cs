@@ -16,13 +16,13 @@ namespace FileSharingApp.Areas.Identity
         public void Configure(IWebHostBuilder builder)
         {
             builder.ConfigureServices((context, services) => {
-                services.AddDbContext<ApplicationDbContext>(options =>
-                    options.UseSqlServer(
-                        context.Configuration.GetConnectionString("ApplicationDbContextConnection")));
+                //services.AddDbContext<ApplicationDbContext>(options =>
+                //    options.UseSqlServer(
+                //        context.Configuration.GetConnectionString("ApplicationDbContextConnection")));
 
-                services.AddDefaultIdentity<AppUser>()
-                    .AddEntityFrameworkStores<ApplicationDbContext>();
-                
+                //services.AddDefaultIdentity<AppUser>()
+                //    .AddEntityFrameworkStores<ApplicationDbContext>();
+
             });
         }
     }
