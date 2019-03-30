@@ -9,20 +9,25 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using FileSharingApp.Data;
 
 namespace FileSharingApp.Areas.Identity.Pages.Account.Manage
 {
     public partial class IndexModel : PageModel
     {
+        private readonly ApplicationDbContext _context;
         private readonly UserManager<AppUser> _userManager;
         private readonly SignInManager<AppUser> _signInManager;
         private readonly IEmailSender _emailSender;
 
         public IndexModel(
+            ApplicationDbContext context,
             UserManager<AppUser> userManager,
             SignInManager<AppUser> signInManager,
             IEmailSender emailSender)
         {
+            _context = context;
             _userManager = userManager;
             _signInManager = signInManager;
             _emailSender = emailSender;
@@ -38,6 +43,9 @@ namespace FileSharingApp.Areas.Identity.Pages.Account.Manage
         [BindProperty]
         public InputModel Input { get; set; }
 
+        [ViewData]
+        public SelectList Specialities { get; set; }
+
         public class InputModel
         {
             [Required]
@@ -47,6 +55,10 @@ namespace FileSharingApp.Areas.Identity.Pages.Account.Manage
             [Phone]
             [Display(Name = "Phone number")]
             public string PhoneNumber { get; set; }
+
+            public string FullName { get; set; }
+            public int? Semester { get; set; }
+            public int? SpecialityId { get; set; }
         }
 
         public async Task<IActionResult> OnGetAsync()
@@ -63,13 +75,17 @@ namespace FileSharingApp.Areas.Identity.Pages.Account.Manage
 
             Username = userName;
 
-            Input = new InputModel
-            {
+            Input = new InputModel {
                 Email = email,
-                PhoneNumber = phoneNumber
+                PhoneNumber = phoneNumber,
+                FullName = user.FullName,
+                Semester = user.Semester,
+                SpecialityId = user.SpecialityId
             };
 
             IsEmailConfirmed = await _userManager.IsEmailConfirmedAsync(user);
+
+            Specialities = new SelectList(_context.Specialities, "Id", "Name");
 
             return Page();
         }
@@ -108,6 +124,18 @@ namespace FileSharingApp.Areas.Identity.Pages.Account.Manage
                     throw new InvalidOperationException($"Unexpected error occurred setting phone number for user with ID '{userId}'.");
                 }
             }
+
+            if (Input.FullName != user.FullName) {
+                user.FullName = Input.FullName;
+            }
+            if (Input.Semester != user.Semester) {
+                user.Semester = Input.Semester;
+            }
+            if (Input.FullName != user.FullName) {
+                user.FullName = Input.FullName;
+            }
+
+            await _userManager.UpdateAsync(user);
 
             await _signInManager.RefreshSignInAsync(user);
             StatusMessage = "Your profile has been updated";
