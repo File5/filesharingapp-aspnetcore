@@ -44,7 +44,9 @@
                 @Html.DisplayFor(modelItem => item.Name)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Path)
+                <a asp-action="Download" asp-route-filename="@item.Path">
+                    @Html.DisplayFor(modelItem => item.Path)
+                </a>
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Public)

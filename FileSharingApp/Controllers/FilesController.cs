@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using FileSharingApp.Data;
+using Microsoft.AspNetCore.Http;
+using System.IO;
 
 namespace FileSharingApp.Controllers
 {
@@ -56,10 +58,25 @@ namespace FileSharingApp.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Path,Public,UserId,SubjectId")] File file)
+        public async Task<IActionResult> Create([Bind("Id,Name,Path,Public,UserId,SubjectId")] Data.File file, IFormFile filedata)
         {
             if (ModelState.IsValid)
             {
+                if (file == null)
+                    return Content("file not selected");
+
+                var extension = filedata.FileName.Split(".").LastOrDefault();
+                var filename = Path.GetRandomFileName() + "." + extension;
+                var path = Path.Combine(
+                            Directory.GetCurrentDirectory(), "wwwroot",
+                            "Files", filename);
+
+                using (var stream = new FileStream(path, FileMode.Create)) {
+                    await filedata.CopyToAsync(stream);
+                }
+
+                file.Path = filename;
+
                 _context.Add(file);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -90,7 +107,7 @@ namespace FileSharingApp.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Path,Public,UserId,SubjectId")] File file)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Path,Public,UserId,SubjectId")] Data.File file)
         {
             if (id != file.Id)
             {
@@ -146,9 +163,54 @@ namespace FileSharingApp.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var file = await _context.Files.FindAsync(id);
+
+            var path = Path.Combine(
+                           Directory.GetCurrentDirectory(),
+                           "wwwroot", "Files", file.Path);
+            System.IO.File.Delete(path);
+
             _context.Files.Remove(file);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
+        }
+
+        public async Task<IActionResult> Download(string filename) {
+            if (filename == null)
+                return Content("filename not present");
+
+            var path = Path.Combine(
+                           Directory.GetCurrentDirectory(),
+                           "wwwroot", "Files", filename);
+
+            var memory = new MemoryStream();
+            using (var stream = new FileStream(path, FileMode.Open)) {
+                await stream.CopyToAsync(memory);
+            }
+            memory.Position = 0;
+            return File(memory, GetContentType(path), Path.GetFileName(path));
+        }
+
+        private string GetContentType(string path) {
+            var types = GetMimeTypes();
+            var ext = Path.GetExtension(path).ToLowerInvariant();
+            return types.GetValueOrDefault(ext, "application/octet-stream");
+        }
+
+        private Dictionary<string, string> GetMimeTypes() {
+            return new Dictionary<string, string>
+            {
+                {".txt", "text/plain"},
+                {".pdf", "application/pdf"},
+                {".doc", "application/vnd.ms-word"},
+                {".docx", "application/vnd.ms-word"},
+                {".xls", "application/vnd.ms-excel"},
+                {".xlsx", "application/vnd.openxmlformatsofficedocument.spreadsheetml.sheet"},
+                {".png", "image/png"},
+                {".jpg", "image/jpeg"},
+                {".jpeg", "image/jpeg"},
+                {".gif", "image/gif"},
+                {".csv", "text/csv"}
+            };
         }
 
         private bool FileExists(int id)
