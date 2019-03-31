@@ -30,12 +30,11 @@ namespace FileSharingApp.Controllers
         }
 
         public async Task<IActionResult> ChangeRole(string id) {
-            var adminRole = _context.Roles.Where(i => i.Name.Equals(adminRoleName)).FirstOrDefault();
+            var adminRole = await _roleManager.FindByNameAsync(adminRoleName);
 
             if (adminRole == null) {
                 adminRole = new IdentityRole(adminRoleName);
-                _context.Roles.Add(adminRole);
-                await _context.SaveChangesAsync();
+                await _roleManager.CreateAsync(adminRole);
             }
 
             var user = await _userManager.FindByIdAsync(id);
