@@ -36,6 +36,7 @@ namespace FileSharingApp {
                     Configuration.GetConnectionString("ApplicationDbContextConnection")));
 
             services.AddDefaultIdentity<AppUser>()
+                .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
             // services.AddIdentity<AppUser, IdentityRole>()
             //     .AddEntityFrameworkStores<ApplicationDbContext>();
