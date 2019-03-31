@@ -131,6 +131,9 @@ namespace FileSharingApp.Areas.Identity.Pages.Account.Manage
             if (Input.Semester != user.Semester) {
                 user.Semester = Input.Semester;
             }
+            if (Input.SpecialityId != user.SpecialityId) {
+                user.SpecialityId = Input.SpecialityId;
+            }
             if (Input.FullName != user.FullName) {
                 user.FullName = Input.FullName;
             }

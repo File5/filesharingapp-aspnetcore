@@ -13,7 +13,7 @@ namespace FileSharingApp.Controllers
     [Authorize(Roles = "Admin")]
     public class AdminController : Controller
     {
-        private readonly string adminRoleName = "Admin";
+        public static readonly string adminRoleName = "Admin";
         private readonly UserManager<AppUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly ApplicationDbContext _context;

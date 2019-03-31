@@ -6,9 +6,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using FileSharingApp.Data;
+using Microsoft.AspNetCore.Authorization;
 
 namespace FileSharingApp.Controllers
 {
+    //[Authorize(Roles = "Admin")]
     public class SpecialitiesController : Controller
     {
         private readonly ApplicationDbContext _context;

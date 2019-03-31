@@ -30,7 +30,13 @@ namespace FileSharingApp.Controllers
         public async Task<IActionResult> Index()
         {
             var applicationDbContext = _context.Files.Include(f => f.Subject).Include(f => f.User);
-            return View(await applicationDbContext.ToListAsync());
+            AppUser currentUser = await GetCurrentUser();
+            bool isAdmin = await _userManager.IsInRoleAsync(currentUser, AdminController.adminRoleName);
+            IEnumerable<Data.File> result = applicationDbContext.ToList();
+            if (!isAdmin) {
+                result = result.Where(i => CheckFileVisibleFor(currentUser, i));
+            }
+            return View(result.ToList());
         }
 
         // GET: Files/Details/5
@@ -213,6 +219,26 @@ namespace FileSharingApp.Controllers
 
         private async Task<AppUser> GetCurrentUser() {
             return await _userManager.GetUserAsync(HttpContext.User);
+        }
+
+        private bool CheckFileVisibleFor(AppUser user, Data.File file) {
+            if (file.UserId.Equals(user.Id)) {
+                return true;
+            }
+
+            if (file.Public) {
+                var userSpecialityId = user.SpecialityId;
+                var fileSpecialityId = file.Subject.SpecialityId;
+                var userSemester = user.Semester;
+                var fileSemester = file.Subject.Semester;
+                if (userSpecialityId != null && userSpecialityId == fileSpecialityId || fileSpecialityId == null) {
+                    if (userSemester == null || userSemester == fileSemester) {
+                        return true; 
+                    }
+                }
+            }
+
+            return false;
         }
 
         private string GetContentType(string path) {
