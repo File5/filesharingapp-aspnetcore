@@ -27,7 +27,7 @@
             @Html.DisplayNameFor(model => model.Path)
         </dt>
         <dd>
-            <a asp-action="Download" asp-route-filename="@Html.DisplayFor(model => model.Path)">
+            <a asp-action="Download" asp-route-filename="@Html.ValueFor(model => model.Path)">
                 @Html.DisplayFor(model => model.Path)
             </a>
         </dd>
@@ -41,7 +41,7 @@
             @Html.DisplayNameFor(model => model.User)
         </dt>
         <dd>
-            @Html.DisplayFor(model => model.UserId)
+            @Html.DisplayFor(model => model.User.FullName)
         </dd>
         <dt>
             @Html.DisplayNameFor(model => model.Subject)

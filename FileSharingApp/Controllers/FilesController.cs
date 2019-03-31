@@ -8,22 +8,28 @@ using Microsoft.EntityFrameworkCore;
 using FileSharingApp.Data;
 using Microsoft.AspNetCore.Http;
 using System.IO;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using FileSharingApp.Areas.Identity.Data;
 
 namespace FileSharingApp.Controllers
 {
+    [Authorize]
     public class FilesController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<AppUser> _userManager;
 
-        public FilesController(ApplicationDbContext context)
+        public FilesController(ApplicationDbContext context, UserManager<AppUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         // GET: Files
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.Files.Include(f => f.Subject);
+            var applicationDbContext = _context.Files.Include(f => f.Subject).Include(f => f.User);
             return View(await applicationDbContext.ToListAsync());
         }
 
@@ -37,6 +43,7 @@ namespace FileSharingApp.Controllers
 
             var file = await _context.Files
                 .Include(f => f.Subject)
+                .Include(f => f.User)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (file == null)
             {
@@ -58,7 +65,7 @@ namespace FileSharingApp.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Path,Public,UserId,SubjectId")] Data.File file, IFormFile filedata)
+        public async Task<IActionResult> Create([Bind("Id,Name,Public,SubjectId")] Data.File file, IFormFile filedata)
         {
             if (ModelState.IsValid)
             {
@@ -76,6 +83,9 @@ namespace FileSharingApp.Controllers
                 }
 
                 file.Path = filename;
+                AppUser currentUser = await GetCurrentUser();
+                file.UserId = currentUser.Id;
+                file.User = currentUser;
 
                 _context.Add(file);
                 await _context.SaveChangesAsync();
@@ -107,8 +117,12 @@ namespace FileSharingApp.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Path,Public,UserId,SubjectId")] Data.File file)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Public,SubjectId")] Data.File file)
         {
+            var origFile = await _context.Files.FindAsync(id);
+            if (origFile == null) {
+                return NotFound();
+            }
             if (id != file.Id)
             {
                 return NotFound();
@@ -118,12 +132,17 @@ namespace FileSharingApp.Controllers
             {
                 try
                 {
-                    _context.Update(file);
+                    origFile.Name = file.Name;
+                    origFile.Public = file.Public;
+                    origFile.SubjectId = file.SubjectId;
+                    origFile.Subject = file.Subject;
+
+                    _context.Update(origFile);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!FileExists(file.Id))
+                    if (!FileExists(origFile.Id))
                     {
                         return NotFound();
                     }
@@ -164,10 +183,12 @@ namespace FileSharingApp.Controllers
         {
             var file = await _context.Files.FindAsync(id);
 
-            var path = Path.Combine(
-                           Directory.GetCurrentDirectory(),
-                           "wwwroot", "Files", file.Path);
-            System.IO.File.Delete(path);
+            if (file.Path != null) {
+                var path = Path.Combine(
+                               Directory.GetCurrentDirectory(),
+                               "wwwroot", "Files", file.Path);
+                System.IO.File.Delete(path);
+            }
 
             _context.Files.Remove(file);
             await _context.SaveChangesAsync();
@@ -188,6 +209,10 @@ namespace FileSharingApp.Controllers
             }
             memory.Position = 0;
             return File(memory, GetContentType(path), Path.GetFileName(path));
+        }
+
+        private async Task<AppUser> GetCurrentUser() {
+            return await _userManager.GetUserAsync(HttpContext.User);
         }
 
         private string GetContentType(string path) {

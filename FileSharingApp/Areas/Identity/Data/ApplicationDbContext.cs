@@ -51,7 +51,7 @@ namespace FileSharingApp.Data
         public string Path { get; set; }
         public bool Public { get; set; }
 
-        public int UserId { get; set; }
+        public string UserId { get; set; }
         public AppUser User { get; set; }
         public int SubjectId { get; set; }
         public Subject Subject { get; set; }
