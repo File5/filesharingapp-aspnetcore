@@ -114,6 +114,10 @@ namespace FileSharingApp.Controllers
             {
                 return NotFound();
             }
+            bool canEdit = await CanEditFile(file);
+            if (!canEdit) {
+                return Forbid();
+            }
             ViewData["SubjectId"] = new SelectList(_context.Subjects, "Id", "Name", file.SubjectId);
             return View(file);
         }
@@ -133,6 +137,11 @@ namespace FileSharingApp.Controllers
             {
                 return NotFound();
             }
+            bool canEdit = await CanEditFile(origFile);
+            if (!canEdit) {
+                return Forbid();
+            }
+
 
             if (ModelState.IsValid)
             {
@@ -178,6 +187,11 @@ namespace FileSharingApp.Controllers
             {
                 return NotFound();
             }
+            bool canEdit = await CanEditFile(file);
+            if (!canEdit) {
+                return Forbid();
+            }
+
 
             return View(file);
         }
@@ -188,6 +202,11 @@ namespace FileSharingApp.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var file = await _context.Files.FindAsync(id);
+            bool canEdit = await CanEditFile(file);
+            if (!canEdit) {
+                return Forbid();
+            }
+
 
             if (file.Path != null) {
                 var path = Path.Combine(
@@ -239,6 +258,12 @@ namespace FileSharingApp.Controllers
             }
 
             return false;
+        }
+
+        private async Task<bool> CanEditFile(Data.File file) {
+            var currentUser = await GetCurrentUser();
+            bool isAdmin = await _userManager.IsInRoleAsync(currentUser, AdminController.adminRoleName);
+            return file.UserId == currentUser.Id || isAdmin;
         }
 
         private string GetContentType(string path) {
