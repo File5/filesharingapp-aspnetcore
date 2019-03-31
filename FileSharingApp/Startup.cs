@@ -35,8 +35,10 @@ namespace FileSharingApp {
                 options.UseSqlServer(
                     Configuration.GetConnectionString("ApplicationDbContextConnection")));
 
-            services.AddDefaultIdentity<AppUser>()
-                .AddRoles<IdentityRole>()
+            services.AddIdentity<AppUser, IdentityRole>()
+                .AddRoleManager<RoleManager<IdentityRole>>()
+                .AddDefaultUI()
+                .AddDefaultTokenProviders()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
             // services.AddIdentity<AppUser, IdentityRole>()
             //     .AddEntityFrameworkStores<ApplicationDbContext>();

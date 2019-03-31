@@ -6,9 +6,11 @@ using FileSharingApp.Areas.Identity.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using FileSharingApp.Data;
+using Microsoft.AspNetCore.Authorization;
 
 namespace FileSharingApp.Controllers
 {
+    [Authorize(Roles = "Admin")]
     public class AdminController : Controller
     {
         private readonly string adminRoleName = "Admin";
