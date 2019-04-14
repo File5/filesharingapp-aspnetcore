@@ -11,9 +11,9 @@ namespace FileSharingApp.Data
 {
     public class ApplicationDbContext : IdentityDbContext<AppUser>
     {
-        public DbSet<Speciality> Specialities { get; set; }
-        public DbSet<Subject> Subjects { get; set; }
-        public DbSet<File> Files { get; set; }
+        public virtual DbSet<Speciality> Specialities { get; set; }
+        public virtual DbSet<Subject> Subjects { get; set; }
+        public virtual DbSet<File> Files { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
